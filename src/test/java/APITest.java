@@ -2,12 +2,19 @@ import org.helpers.BaseRequests;
 import org.pojo.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.restassured.RestAssured.requestSpecification;
 
 public class APITest {
+
+    final String status = "publish";
+    final String title = "New post";
+    final String content = "sample text";
+    final String contentExpected = "<p>" + content + "</p>\n";
 
     @BeforeClass
     public void setup() {
@@ -25,12 +32,26 @@ public class APITest {
     @Test(description = "Create post API test", priority = 1)
     public void testCreatePost() {
         Post postPojo = Post.builder()
-                .status("publish")
-                .title("New post")
-                .content("sample text")
+                .status(status)
+                .title(title)
+                .content(content)
                 .build();
 
-        BaseRequests.createPost(entitiesId, postPojo);
+        BaseRequests.createPost(entitiesId, postPojo, status, title, contentExpected);
+    }
+
+    /**
+     * Тест получения сущности.
+     */
+    @Test(description = "Get post API test", priority = 2)
+    public void testGetEntity() {
+        Post post = BaseRequests.getPostById(entitiesId.get(0));
+
+        SoftAssert softAssertion = new SoftAssert();
+        softAssertion.assertEquals(post.getStatus(), status, "Статус записи не совпадает");
+        softAssertion.assertEquals(post.getTitle(), title, "Заголовок записи не совпадает");
+        softAssertion.assertEquals(post.getContent(), contentExpected,"Содержание записи не совпадает");
+        softAssertion.assertAll();
     }
 
 }
