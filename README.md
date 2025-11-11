@@ -1,7 +1,5 @@
 # Инструкция
 В директории src/test/resources создать файл secrets.properties со следующими параметрами:
-* api.url=http://localhost:8000/
-* api.url.create=index.php?rest_route=/wp/v2/posts
 * api.username - ваш логин для авторизации на wordpress
 * api.password - ваш пароль для авторизации на wordpress
 
