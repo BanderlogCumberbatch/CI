@@ -38,13 +38,7 @@ public class APITest {
                 .build();
 
         BaseRequests.createPost(entitiesId, postPojo, status, title, contentExpected);
-    }
 
-    /**
-     * Тест получения сущности.
-     */
-    @Test(description = "Get post API test", priority = 2)
-    public void testGetEntity() {
         Post post = BaseRequests.getPostById(entitiesId.get(0));
 
         SoftAssert softAssertion = new SoftAssert();
