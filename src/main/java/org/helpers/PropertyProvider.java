@@ -1,17 +1,26 @@
 package org.helpers;
 
 import lombok.Getter;
-
 import java.io.InputStream;
 import java.util.Properties;
 
-public class PropertyProvider {
+@Getter
+public final class PropertyProvider {
 
+    /**
+     * Текущий экземпляр класса.
+     */
     private static PropertyProvider instance;
 
-    @Getter
+    /**
+     * Класс для загрузки properties.
+     */
     private final Properties properties = new Properties();
 
+    /**
+     * Загрузить .properties-файл, если он уже не загружен.
+     * @return текущий экземпляр класса
+     */
     public static PropertyProvider getInstance() {
         if (instance == null) {
             instance = new PropertyProvider();
@@ -19,7 +28,9 @@ public class PropertyProvider {
         return instance;
     }
 
-    // Загрузка .properties-файла
+    /**
+     * Загрузка .properties-файла.
+     */
     private PropertyProvider() {
         try (InputStream input = getClass().getClassLoader()
                 .getResourceAsStream("env_local.properties")) {
@@ -29,5 +40,13 @@ public class PropertyProvider {
         }
     }
 
-    public String getProperty(String key) { return  properties.getProperty(key); }
+    /**
+     * Загрузить параметр из .properties-файла.
+     * @param key ключ, для нахождения параметра
+     * @return параметр, найденный по ключю
+     */
+    public String getProperty(final String key) {
+        return properties.getProperty(key);
+    }
 }
+

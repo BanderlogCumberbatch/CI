@@ -10,21 +10,20 @@ import lombok.Setter;
 public class Post {
 
     /**
-     * Статус записи
+     * Статус записи.
      */
     @Builder.Default
     private String status = "private";
 
     /**
-     * Название записи
+     * Название записи.
      */
     @Builder.Default
     private String title = "default";
 
     /**
-     * Содержимое записи
+     * Содержимое записи.
      */
     @Builder.Default
     private String content = "default";
-
 }
