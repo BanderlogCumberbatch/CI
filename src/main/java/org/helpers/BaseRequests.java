@@ -57,15 +57,12 @@ public final class BaseRequests {
      * Создание сущности.
      * @param postsId список id
      * @param postPojo экземпляр создаваемой записи
-     * @param status Ожидаемый статус записи
-     * @param title Ожидаемый заголовок записи
-     * @param content Ожидаемое содержимое записи
      */
     public static void createPost(final List<String> postsId,
-                                  final Post postPojo,
-                                  final String status,
-                                  final String title,
-                                  final String content) {
+                                  final Post postPojo) {
+
+        // Ожидаемое содержание записи в ответе
+        String contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
 
         String postId = given()
                 .spec(requestSpecification)
@@ -75,9 +72,9 @@ public final class BaseRequests {
                     .post(API_POSTS)
                 .then()
                     .statusCode(201)
-                    .body("status", equalTo(status))
-                    .body("title.rendered", equalTo(title))
-                    .body("content.rendered", equalTo(content))
+                    .body("status", equalTo(postPojo.getStatus()))
+                    .body("title.rendered", equalTo(postPojo.getTitle()))
+                    .body("content.rendered", equalTo(contentExpected))
                 .extract()
                     .jsonPath().getString("id");
 
@@ -85,18 +82,67 @@ public final class BaseRequests {
     }
 
     /**
+     * Обновление записи.
+     * @param postId id записи
+     * @param postPojo экземпляр создаваемой записи
+     */
+    public static void putPost(final String postId, final Post postPojo) {
+
+        // Ожидаемое содержание записи в ответе
+        String contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
+
+        given()
+            .spec(requestSpecification)
+            .auth().preemptive().basic(USERNAME, PASSWORD)
+            .body(postPojo)
+            .pathParam("id", postId)
+            .when()
+                .put(API_POSTS + "/{id}")
+            .then()
+                .statusCode(200)
+                .body("status", equalTo(postPojo.getStatus()))
+                .body("title.rendered", equalTo(postPojo.getTitle()))
+                .body("content.rendered", equalTo(contentExpected));
+    }
+
+    /**
+     * Изменение записи.
+     * @param postId id записи
+     * @param postPojo экземпляр создаваемой записи
+     */
+    public static void patchPost(final String postId, final Post postPojo) {
+
+        // Ожидаемое содержание записи в ответе
+        String contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
+
+        given()
+            .spec(requestSpecification)
+            .auth().preemptive().basic(USERNAME, PASSWORD)
+            .body(postPojo)
+            .pathParam("id", postId)
+            .when()
+                .patch(API_POSTS + "/{id}")
+            .then()
+                .statusCode(200)
+                .body("status", equalTo(postPojo.getStatus()))
+                .body("title.rendered", equalTo(postPojo.getTitle()))
+                .body("content.rendered", equalTo(contentExpected));
+    }
+
+    /**
      * Получение сущности по id.
      * @param postId id записи
+     * @param statusCode ожидаемый статус-код
      * @return экземпляр записи
      */
-    public static Post getPostById(final String postId) {
+    public static Post getPostById(final String postId, final int statusCode) {
         Response response = given()
                 .spec(requestSpecification)
                 .pathParam("id", postId)
                 .when()
                     .get(API_POSTS + "/{id}")
                 .then()
-                    .statusCode(200)
+                    .statusCode(statusCode)
                     .extract().response();
 
         return Post.builder()

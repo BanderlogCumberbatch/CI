@@ -1,5 +1,6 @@
 import org.helpers.BaseRequests;
 import org.pojo.*;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
@@ -10,26 +11,6 @@ import java.util.List;
  * Класс тестов API для WordPress.
  */
 public class APITest {
-
-    /**
-     * Статус создаваемой записи
-     */
-    final String status = "publish";
-
-    /**
-     * Заголовок создаваемой записи
-     */
-    final String title = "New post";
-
-    /**
-     * Содержание создаваемой записи
-     */
-    final String content = "sample text";
-
-    /**
-     * Ожидаемое содержание создаваемой записи
-     */
-    final String contentExpected = "<p>" + content + "</p>\n";
 
     @BeforeClass
     public void setup() {
@@ -42,26 +23,62 @@ public class APITest {
     private final List<String> postsId = new ArrayList<>();
 
     /**
-     * Тест создания записи.
+     * Тест создания, изменения, обновления и удаления записи.
      */
-    @Test(description = "Create post API test", priority = 1)
+    @Test(description = "Posts API test", priority = 1)
     public void testCreatePost() {
+        // Создание pojo для запроса
         Post postPojo = Post.builder()
-                .status(status)
-                .title(title)
-                .content(content)
+                .status("publish")
+                .title("New post")
+                .content("sample text")
                 .build();
 
-        BaseRequests.createPost(postsId, postPojo, status, title, contentExpected);
+        // Тест-кейс 1. Создание записи
+        BaseRequests.createPost(postsId, postPojo);
 
-        Post post = BaseRequests.getPostById(postsId.get(0));
+        Post post = BaseRequests.getPostById(postsId.get(0), 200);
 
         SoftAssert softAssertion = new SoftAssert();
-        softAssertion.assertEquals(post.getStatus(), status, "Статус записи не совпадает");
-        softAssertion.assertEquals(post.getTitle(), title, "Заголовок записи не совпадает");
+        softAssertion.assertEquals(post.getStatus(), postPojo.getStatus(), "Статус записи не совпадает");
+        softAssertion.assertEquals(post.getTitle(), postPojo.getTitle(), "Заголовок записи не совпадает");
+        String contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
         softAssertion.assertEquals(post.getContent(), contentExpected,"Содержание записи не совпадает");
         softAssertion.assertAll();
-        
+
+        // Тест-кейс 2. Обновление записи
+        postPojo.setTitle("New new post");
+
+        BaseRequests.putPost(postsId.get(0), postPojo);
+
+        post = BaseRequests.getPostById(postsId.get(0), 200);
+
+        softAssertion = new SoftAssert();
+        softAssertion.assertEquals(post.getStatus(), postPojo.getStatus(), "Статус записи не совпадает");
+        softAssertion.assertEquals(post.getTitle(), postPojo.getTitle(), "Заголовок записи не совпадает");
+        contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
+        softAssertion.assertEquals(post.getContent(), contentExpected,"Содержание записи не совпадает");
+        softAssertion.assertAll();
+
+        // Тест-кейс 3. Изменение записи
+        postPojo.setTitle("New new new post");
+
+        BaseRequests.patchPost(postsId.get(0), postPojo);
+
+        post = BaseRequests.getPostById(postsId.get(0), 200);
+
+        softAssertion = new SoftAssert();
+        softAssertion.assertEquals(post.getStatus(), postPojo.getStatus(), "Статус записи не совпадает");
+        softAssertion.assertEquals(post.getTitle(), postPojo.getTitle(), "Заголовок записи не совпадает");
+        contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
+        softAssertion.assertEquals(post.getContent(), contentExpected,"Содержание записи не совпадает");
+        softAssertion.assertAll();
+
+        // Тест-кейс 4. Удаление записи
         BaseRequests.deletePostsById(postsId);
+
+        post = BaseRequests.getPostById(postsId.get(0), 404);
+
+        Assert.assertNull(post.getStatus(), "Запись не удалилась");
     }
 }
