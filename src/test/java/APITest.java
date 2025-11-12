@@ -12,32 +12,33 @@ import java.util.List;
  */
 public class APITest {
 
-    @BeforeClass
-    public void setup() {
-        BaseRequests.initRequestSpecification();
-    }
-
     /**
      * Список ID записей.
      */
     private final List<String> postsId = new ArrayList<>();
 
     /**
-     * Тест создания, изменения, обновления и удаления записи.
+     * Создание pojo для запроса.
+     */
+    private final Post postPojo = Post.builder()
+            .status("publish")
+            .title("New post")
+            .content("sample text")
+            .build();
+
+    @BeforeClass
+    public void setup() {
+        BaseRequests.initRequestSpecification();
+    }
+
+    /**
+     * Тест создания записи.
      */
     @Test(description = "Posts API test", priority = 1)
     public void testCreatePost() {
-        // Создание pojo для запроса
-        Post postPojo = Post.builder()
-                .status("publish")
-                .title("New post")
-                .content("sample text")
-                .build();
+        String postId = BaseRequests.createPost(postsId, postPojo);
 
-        // Тест-кейс 1. Создание записи
-        BaseRequests.createPost(postsId, postPojo);
-
-        Post post = BaseRequests.getPostById(postsId.get(0), 200);
+        Post post = BaseRequests.getPostById(postId, 200);
 
         SoftAssert softAssertion = new SoftAssert();
         softAssertion.assertEquals(post.getStatus(), postPojo.getStatus(), "Статус записи не совпадает");
@@ -45,39 +46,58 @@ public class APITest {
         String contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
         softAssertion.assertEquals(post.getContent(), contentExpected,"Содержание записи не совпадает");
         softAssertion.assertAll();
+    }
 
-        // Тест-кейс 2. Обновление записи
+    /**
+     * Тест изменения записи.
+     */
+    @Test(description = "Change post API test", priority = 2)
+    public void testChangePost() {
+        String postId = BaseRequests.createPost(postsId, postPojo);
+
         postPojo.setTitle("New new post");
+        BaseRequests.patchPost(postId, postPojo);
 
-        BaseRequests.putPost(postsId.get(0), postPojo);
+        Post post = BaseRequests.getPostById(postId, 200);
 
-        post = BaseRequests.getPostById(postsId.get(0), 200);
-
-        softAssertion = new SoftAssert();
+        SoftAssert softAssertion = new SoftAssert();
         softAssertion.assertEquals(post.getStatus(), postPojo.getStatus(), "Статус записи не совпадает");
         softAssertion.assertEquals(post.getTitle(), postPojo.getTitle(), "Заголовок записи не совпадает");
-        contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
+        String contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
         softAssertion.assertEquals(post.getContent(), contentExpected,"Содержание записи не совпадает");
         softAssertion.assertAll();
+    }
 
-        // Тест-кейс 3. Изменение записи
+    /**
+     * Тест обновления записи.
+     */
+    @Test(description = "Update post API test", priority = 3)
+    public void testUpdatePost() {
+        String postId = BaseRequests.createPost(postsId, postPojo);
+
         postPojo.setTitle("New new new post");
+        BaseRequests.putPost(postId, postPojo);
 
-        BaseRequests.patchPost(postsId.get(0), postPojo);
+        Post post = BaseRequests.getPostById(postId, 200);
 
-        post = BaseRequests.getPostById(postsId.get(0), 200);
-
-        softAssertion = new SoftAssert();
+        SoftAssert softAssertion = new SoftAssert();
         softAssertion.assertEquals(post.getStatus(), postPojo.getStatus(), "Статус записи не совпадает");
         softAssertion.assertEquals(post.getTitle(), postPojo.getTitle(), "Заголовок записи не совпадает");
-        contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
+        String contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
         softAssertion.assertEquals(post.getContent(), contentExpected,"Содержание записи не совпадает");
         softAssertion.assertAll();
+    }
 
-        // Тест-кейс 4. Удаление записи
+    /**
+     * Тест удаления записи
+     */
+    @Test(description = "Delete post API test", priority = 4)
+    public void testDeletePost() {
+        String postId = BaseRequests.createPost(postsId, postPojo);
+
         BaseRequests.deletePostsById(postsId);
 
-        post = BaseRequests.getPostById(postsId.get(0), 404);
+        Post post = BaseRequests.getPostById(postId, 404);
 
         Assert.assertNull(post.getStatus(), "Запись не удалилась");
     }

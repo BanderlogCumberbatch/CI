@@ -57,8 +57,9 @@ public final class BaseRequests {
      * Создание сущности.
      * @param postsId список id
      * @param postPojo экземпляр создаваемой записи
+     * @return id записи
      */
-    public static void createPost(final List<String> postsId,
+    public static String createPost(final List<String> postsId,
                                   final Post postPojo) {
 
         // Ожидаемое содержание записи в ответе
@@ -79,6 +80,7 @@ public final class BaseRequests {
                     .jsonPath().getString("id");
 
         postsId.add(postId);
+        return postId;
     }
 
     /**
