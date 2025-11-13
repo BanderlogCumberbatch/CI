@@ -30,14 +30,50 @@ public final class BaseRequests {
     /**
      * Логин для WordPress.
      */
-    private static final String USERNAME = PropertyProvider.getInstance()
-            .getProperty("api.username");
+    private static final String USERNAME = getUsername();
 
     /**
      * Пароль для WordPress.
      */
-    private static final String PASSWORD = PropertyProvider.getInstance()
-            .getProperty("api.password");
+    private static final String PASSWORD = getPassword();
+
+    /**
+     * Переменная окружения из Jenkins для доступа к логину WordPress.
+     */
+    private static final String JENKINS_API_USERNAME = "WORDPRESS_USERNAME";
+
+    /**
+     * Переменная окружения из Jenkins для доступа к паролю WordPress.
+     */
+    private static final String JENKINS_API_PASSWORD = "WORDPRESS_PASSWORD";
+
+    /**
+     * Метод, возвращающий логин WordPress
+     * @return переменная окружения из Jenkins, если она присутствует
+     * в противном случае логин из .properties файла
+     */
+    private static String getUsername() {
+
+        String envUsername = System.getenv(JENKINS_API_USERNAME);
+        if (envUsername != null && !envUsername.trim().isEmpty()) {
+            return envUsername;
+        }
+        return PropertyProvider.getInstance().getProperty("api.username");
+    }
+
+    /**
+     * Метод, возвращающий пароль WordPress
+     * @return переменная окружения из Jenkins, если она присутствует
+     * в противном случае пароль из .properties файла
+     */
+    private static String getPassword() {
+
+        String envPassword = System.getenv(JENKINS_API_PASSWORD);
+        if (envPassword != null && !envPassword.trim().isEmpty()) {
+            return envPassword;
+        }
+        return PropertyProvider.getInstance().getProperty("api.password");
+    }
 
     /**
      * Подготовка спецификации запроса.

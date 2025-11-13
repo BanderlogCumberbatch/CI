@@ -33,7 +33,7 @@ public final class PropertyProvider {
      */
     private PropertyProvider() {
         try (InputStream input = getClass().getClassLoader()
-                .getResourceAsStream("env_local.properties")) {
+                .getResourceAsStream("secret.properties")) {
             properties.load(input);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load properties file", e);
