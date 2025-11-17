@@ -1,11 +1,16 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.8.5-openjdk-17'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp'
+        }
+    }
 
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-                sh 'git submodule update --init --recursive'  // если есть подмодули
+                sh 'git submodule update --init --recursive'
             }
         }
 
