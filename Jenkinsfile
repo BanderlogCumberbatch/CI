@@ -98,7 +98,7 @@ pipeline {
                     </html>
                 """,
                 mimeType: "text/html",
-                from: "banderlog.cumberbatch@gmail.com"
+                from: "banderlog.cumberbatch@gmail.com",
                 to: "banderlog.cumberbatch@gmail.com"
             )
         }
