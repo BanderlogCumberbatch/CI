@@ -10,8 +10,8 @@ pipeline {
         }
 
         stage('Build and Test') {
-            triggers { pollSCM('* * * * *') }
             steps {
+                triggers { pollSCM('* * * * *') }
                 script {
                     // Останавливаем предыдущие контейнеры
                     sh 'docker-compose down || true'
