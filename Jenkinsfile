@@ -27,28 +27,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Collect Reports') {
-            steps {
-                script {
-                    // Проверка, существуют ли отчеты
-                    bat 'dir /s target || echo "No target directory"'
-                    bat 'dir /s target/surefire-reports || echo "No surefire-reports directory"'
-                }
-            }
-            post {
-                always {
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target/surefire-reports',
-                        reportFiles: '*.html',
-                        reportName: 'Test Report'
-                    ])
-                }
-            }
-        }
     }
 
     post {
