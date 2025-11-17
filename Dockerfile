@@ -15,4 +15,5 @@ COPY src ./src
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
-ENTRYPOINT ["./entrypoint.sh"]
+# Запуск тестов напрямую
+CMD ["mvn", "test"]
