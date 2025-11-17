@@ -25,11 +25,8 @@ pipeline {
         stage('Build and Test') {
             steps {
                 script {
-                    // Принудительная остановка и удаление контейнеров
-                    bat 'docker-compose down --remove-orphans --volumes --rmi local || echo "Cleanup completed"'
 
-                    // Дополнительная проверка и удаление контейнера по имени
-                    bat 'docker rm -f api-test-runner || echo "Container api-test-runner not found"'
+                    bat 'docker-compose down || echo "No containers to stop"'
 
                     bat 'docker-compose up --build --abort-on-container-exit --exit-code-from test-runner test-runner'
                 }
