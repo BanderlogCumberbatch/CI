@@ -3,7 +3,12 @@ pipeline {
         docker {
             image 'maven:3.8.5-openjdk-17'
             args '-v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp'
+            reuseNode true
         }
+    }
+
+    triggers {
+        pollSCM('* * * * *')
     }
 
     stages {
@@ -16,12 +21,11 @@ pipeline {
 
         stage('Build and Test') {
             steps {
-                triggers { pollSCM('* * * * *') }
                 script {
-                    // Останавливаем предыдущие контейнеры
+                    // Остановка предыдущих контейнеров
                     sh 'docker-compose down || true'
 
-                    // Запускаем тесты
+                    // Запуск тестов
                     sh '''
                         docker-compose up \
                             --build \
@@ -33,14 +37,14 @@ pipeline {
             }
             post {
                 always {
-                    // Сохраняем отчеты независимо от результата тестов
+                    // Сохранение отчётов
                     junit 'target/surefire-reports/*.xml'
                     archiveArtifacts artifacts: 'target/**/*', allowEmptyArchive: true
                     archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true
 
-                    // Публикуем HTML отчеты (если есть)
+                    // Публикация HTML отчетов, если есть
                     publishHTML([
-                        allowMissing: false,
+                        allowMissing: true,  // Разрешаем отсутствие отчетов
                         alwaysLinkToLastBuild: true,
                         keepAll: true,
                         reportDir: 'target/site',
@@ -54,13 +58,8 @@ pipeline {
 
     post {
         always {
-            // Очистка
-            sh 'docker-compose down -v || true'
-            cleanWs()
-        }
-        success {
             emailext (
-                subject: "УСПЕХ: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                subject: "Jenkins Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: """
                     <html>
                         <head>
@@ -68,42 +67,14 @@ pipeline {
                         </head>
                         <body>
                             <h2>Результаты тестирования</h2>
-                            <p><strong>Проект:</strong> ${PROJECT_NAME}</p>
                             <p><strong>Сборка:</strong> #${env.BUILD_NUMBER}</p>
                             <p><strong>Статус:</strong> ${currentBuild.currentResult}</p>
-                            <p>Подробности сборки:</p>
-                            <p>Кол-во тестов: ${env.TEST_COUNTS_TOTAL}</p>
-                            <p>Кол-во провалившихся тестов: ${env.TEST_COUNTS_FAIL}</p>
-                            <p>Кол-во пройденных тестов: ${env.TEST_COUNTS_PASS}</p>
+                            <p><strong>Проект:</strong> ${env.JOB_NAME}</p>
+                            <p>Подробности сборки: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
                         </body>
                     </html>
                 """,
                 mimeType: "text/html",
-                to: "banderlog.cumberbatch@gmail.com"
-            )
-        }
-        failure {
-            emailext (
-                subject: "ПРОВАЛ: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: """
-                    <html>
-                        <head>
-                            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-                        </head>
-                        <body>
-                            <h2>Результаты тестирования</h2>
-                            <p><strong>Проект:</strong> ${PROJECT_NAME}</p>
-                            <p><strong>Сборка:</strong> #${env.BUILD_NUMBER}</p>
-                            <p><strong>Статус:</strong> ${currentBuild.currentResult}</p>
-                            <p>Подробности сборки:</p>
-                            <p>Кол-во тестов: ${env.TEST_COUNTS_TOTAL}</p>
-                            <p>Кол-во провалившихся тестов: ${env.TEST_COUNTS_FAIL}</p>
-                            <p>Кол-во пройденных тестов: ${env.TEST_COUNTS_PASS}</p>
-                        </body>
-                    </html>
-                """,
-                mimeType: "text/html",
-                from: "banderlog.cumberbatch@gmail.com",
                 to: "banderlog.cumberbatch@gmail.com"
             )
         }

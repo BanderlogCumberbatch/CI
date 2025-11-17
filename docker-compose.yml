@@ -4,7 +4,7 @@ services:
   test-runner:
     build:
       context: .
-      dockerfile: Dockerfile.test-runner
+      dockerfile: Dockerfile
     container_name: api-test-runner
     volumes:
       - ./target:/usr/src/app/target
