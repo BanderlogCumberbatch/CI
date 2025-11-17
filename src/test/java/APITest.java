@@ -63,7 +63,7 @@ public class APITest {
         SoftAssert softAssertion = new SoftAssert();
         softAssertion.assertEquals(post.getStatus(), postPojo.getStatus(), "Статус записи не совпадает");
         softAssertion.assertEquals(post.getTitle(), postPojo.getTitle(), "Заголовок записи не совпадает");
-        String contentExpected = postPojo.getContent();
+        String contentExpected = "<p>" + postPojo.getContent() + "</p>\n";
         softAssertion.assertEquals(post.getContent(), contentExpected,"Содержание записи не совпадает");
         softAssertion.assertAll();
     }

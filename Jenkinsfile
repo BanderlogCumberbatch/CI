@@ -15,13 +15,6 @@ pipeline {
             }
         }
 
-        stage('Verify Tools') {
-            steps {
-                bat 'docker --version'
-                bat 'docker-compose --version'
-            }
-        }
-
         stage('Build and Test') {
             steps {
                 script {
