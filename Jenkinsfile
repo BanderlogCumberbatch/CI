@@ -67,9 +67,9 @@ pipeline {
                             <p><strong>Сборка:</strong> #${env.BUILD_NUMBER}</p>
                             <p><strong>Статус:</strong> ${currentBuild.currentResult}</p>
                             <p>Подробности сборки:</p>
-                            <p>Кол-во тестов: ${TEST_COUNTS,var="TOTAL"}</p>
-                            <p>Кол-во провалившихся тестов: ${TEST_COUNTS,var="FAIL"}</p>
-                            <p>Кол-во пройденных тестов: ${TEST_COUNTS,var="PASS"}</p>
+                            <p>Кол-во тестов: ${TEST_COUNTS, var="TOTAL"}</p>
+                            <p>Кол-во провалившихся тестов: ${TEST_COUNTS, var="FAIL"}</p>
+                            <p>Кол-во пройденных тестов: ${TEST_COUNTS, var="PASS"}</p>
                         </body>
                     </html>
                 """,
