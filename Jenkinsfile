@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    options {
-        timeout(time: 30, unit: 'MINUTES')
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -15,6 +10,7 @@ pipeline {
         }
 
         stage('Build and Test') {
+            triggers { pollSCM('* * * * *') }
             steps {
                 script {
                     // Останавливаем предыдущие контейнеры
@@ -60,14 +56,30 @@ pipeline {
         success {
             emailext (
                 subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: "Тесты прошли успешно. Ссылка на сборку: ${env.BUILD_URL}",
+                body: "<h2>Результаты тестирования</h2>
+                       <p><strong>Проект:</strong> ${PROJECT_NAME}</p>
+                       <p><strong>Сборка:</strong> #${BUILD_NUMBER}</p>
+                       <p><strong>Статус:</strong> ${BUILD_STATUS}</p>
+                       <p>Подробности сборки:</p>
+                       <p>Кол-во тестов: ${TEST_COUNTS,var="TOTAL"}</p>
+                       <p>Кол-во провалившихся тестов: ${TEST_COUNTS,var="FAIL"}</p>
+                       <p>Кол-во пройденных тестов: ${TEST_COUNTS,var="PASS"}</p>",
+                from: "banderlog.cumberbatch@gmail.com"
                 to: "banderlog.cumberbatch@gmail.com"
             )
         }
         failure {
             emailext (
                 subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: "Тесты упали. Ссылка на сборку: ${env.BUILD_URL}",
+                body: "<h2>Результаты тестирования</h2>
+                       <p><strong>Проект:</strong> ${PROJECT_NAME}</p>
+                       <p><strong>Сборка:</strong> #${BUILD_NUMBER}</p>
+                       <p><strong>Статус:</strong> ${BUILD_STATUS}</p>
+                       <p>Подробности сборки:</p>
+                       <p>Кол-во тестов: ${TEST_COUNTS,var="TOTAL"}</p>
+                       <p>Кол-во провалившихся тестов: ${TEST_COUNTS,var="FAIL"}</p>
+                       <p>Кол-во пройденных тестов: ${TEST_COUNTS,var="PASS"}</p>",
+                from: "banderlog.cumberbatch@gmail.com"
                 to: "banderlog.cumberbatch@gmail.com"
             )
         }
