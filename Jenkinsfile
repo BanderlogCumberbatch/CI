@@ -9,37 +9,30 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                sh 'git submodule update --init --recursive'
+                bat 'git submodule update --init --recursive'
             }
         }
 
         stage('Build and Test') {
             steps {
                 script {
+                    // Останавливаем предыдущие контейнеры
+                    bat 'docker-compose down || echo "No containers to stop"'
 
-                    docker.image('maven:3.8.5-openjdk-17').inside('--entrypoint="" -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp') {
-
-                        sh 'docker-compose down || true'
-
-
-                        sh '''
-                            docker-compose up \
-                                --build \
-                                --abort-on-container-exit \
-                                --exit-code-from test-runner \
-                                test-runner
-                        '''
-                    }
+                    // Собираем и запускаем тесты
+                    bat '''
+                        docker-compose up --build --abort-on-container-exit --exit-code-from test-runner test-runner
+                    '''
                 }
             }
             post {
                 always {
-
+                    // Сохраняем отчеты
                     junit 'target/surefire-reports/*.xml'
                     archiveArtifacts artifacts: 'target/**/*', allowEmptyArchive: true
                     archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true
 
-
+                    // Публикуем HTML отчеты
                     publishHTML([
                         allowMissing: true,
                         alwaysLinkToLastBuild: true,
