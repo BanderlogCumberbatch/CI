@@ -21,8 +21,7 @@ pipeline {
                     credentialsId: '7b7ebe1b-3300-4e48-92c2-a9de5a18c6ff',
                     usernameVariable: 'WORDPRESS_USERNAME',
                     passwordVariable: 'WORDPRESS_PASSWORD'
-                )])
-                script {
+                )]) {
                     bat 'docker-compose down || echo "No containers to stop"'
                     bat 'docker-compose up --build --abort-on-container-exit --exit-code-from test-runner test-runner'
                 }
