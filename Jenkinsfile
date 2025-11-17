@@ -1,11 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.8.5-openjdk-17'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp'
-            reuseNode true
-        }
-    }
+    agent any
 
     triggers {
         pollSCM('* * * * *')
@@ -22,29 +16,32 @@ pipeline {
         stage('Build and Test') {
             steps {
                 script {
-                    // Остановка предыдущих контейнеров
-                    sh 'docker-compose down || true'
 
-                    // Запуск тестов
-                    sh '''
-                        docker-compose up \
-                            --build \
-                            --abort-on-container-exit \
-                            --exit-code-from test-runner \
-                            test-runner
-                    '''
+                    docker.image('maven:3.8.5-openjdk-17').inside('--entrypoint="" -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp') {
+
+                        sh 'docker-compose down || true'
+
+
+                        sh '''
+                            docker-compose up \
+                                --build \
+                                --abort-on-container-exit \
+                                --exit-code-from test-runner \
+                                test-runner
+                        '''
+                    }
                 }
             }
             post {
                 always {
-                    // Сохранение отчётов
+
                     junit 'target/surefire-reports/*.xml'
                     archiveArtifacts artifacts: 'target/**/*', allowEmptyArchive: true
                     archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true
 
-                    // Публикация HTML отчетов, если есть
+
                     publishHTML([
-                        allowMissing: true,  // Разрешаем отсутствие отчетов
+                        allowMissing: true,
                         alwaysLinkToLastBuild: true,
                         keepAll: true,
                         reportDir: 'target/site',
