@@ -25,8 +25,11 @@ pipeline {
         stage('Build and Test') {
             steps {
                 script {
+                    // Принудительная остановка и удаление контейнеров
+                    bat 'docker-compose down --remove-orphans --volumes --rmi local || echo "Cleanup completed"'
 
-                    bat 'docker-compose down || echo "No containers to stop"'
+                    // Дополнительная проверка и удаление контейнера по имени
+                    bat 'docker rm -f api-test-runner || echo "Container api-test-runner not found"'
 
                     bat 'docker-compose up --build --abort-on-container-exit --exit-code-from test-runner test-runner'
                 }
@@ -68,6 +71,9 @@ pipeline {
     post {
         always {
             script {
+                bat 'docker-compose down --remove-orphans --volumes || echo "Cleanup completed"'
+                bat 'docker rm -f api-test-runner selenoid || echo "Containers already removed"'
+
                 // Собираем информацию о тестах для email
                 def testResult = currentBuild.currentResult
                 def buildUrl = env.BUILD_URL
