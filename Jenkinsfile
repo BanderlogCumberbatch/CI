@@ -3,6 +3,11 @@ pipeline {
         label 'butler'
     }
 
+    environment {
+        WORDPRESS_USERNAME = credentials('7b7ebe1b-3300-4e48-92c2-a9de5a18c6ff').username
+        WORDPRESS_PASSWORD = credentials('7b7ebe1b-3300-4e48-92c2-a9de5a18c6ff').password
+    }
+
     triggers {
         pollSCM('* * * * *')
     }
