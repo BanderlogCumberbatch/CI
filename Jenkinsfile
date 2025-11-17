@@ -67,9 +67,9 @@ pipeline {
                             <p><strong>Сборка:</strong> #${env.BUILD_NUMBER}</p>
                             <p><strong>Статус:</strong> ${currentBuild.currentResult}</p>
                             <p>Подробности сборки:</p>
-                            <p>Кол-во тестов: ${TEST_COUNTS, var="TOTAL"}</p>
-                            <p>Кол-во провалившихся тестов: ${TEST_COUNTS, var="FAIL"}</p>
-                            <p>Кол-во пройденных тестов: ${TEST_COUNTS, var="PASS"}</p>
+                            <p>Кол-во тестов: ${env.TEST_COUNTS_TOTAL}</p>
+                            <p>Кол-во провалившихся тестов: ${env.TEST_COUNTS_FAIL}</p>
+                            <p>Кол-во пройденных тестов: ${env.TEST_COUNTS_PASS}</p>
                         </body>
                     </html>
                 """,
@@ -91,9 +91,9 @@ pipeline {
                             <p><strong>Сборка:</strong> #${env.BUILD_NUMBER}</p>
                             <p><strong>Статус:</strong> ${currentBuild.currentResult}</p>
                             <p>Подробности сборки:</p>
-                            <p>Кол-во тестов: ${TEST_COUNTS, var="TOTAL"}</p>
-                            <p>Кол-во провалившихся тестов: ${TEST_COUNTS, var="FAIL"}</p>
-                            <p>Кол-во пройденных тестов: ${TEST_COUNTS, var="PASS"}</p>
+                            <p>Кол-во тестов: ${env.TEST_COUNTS_TOTAL}</p>
+                            <p>Кол-во провалившихся тестов: ${env.TEST_COUNTS_FAIL}</p>
+                            <p>Кол-во пройденных тестов: ${env.TEST_COUNTS_PASS}</p>
                         </body>
                     </html>
                 """,
