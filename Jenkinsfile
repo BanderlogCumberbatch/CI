@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'butler' // Явно указываем метку агента
+        label 'butler'
     }
 
     triggers {
@@ -8,23 +8,6 @@ pipeline {
     }
 
     stages {
-        stage('Cleanup') {
-            steps {
-                script {
-                    bat '''
-                        docker-compose down --rmi all --volumes --remove-orphans || echo "Cleanup completed"
-
-                        # Дополнительная очистка на случай конфликтов
-                        docker rm -f selenoid || echo "Selenoid container not found"
-                        docker rm -f test-runner || echo "Test-runner container not found"
-
-                        # Очистка сетей
-                        docker network prune -f || echo "Network prune completed"
-                    '''
-                }
-            }
-        }
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -42,9 +25,10 @@ pipeline {
         stage('Build and Test') {
             steps {
                 script {
-                    bat '''
-                        docker-compose up --build --force-recreate --abort-on-container-exit --exit-code-from test-runner test-runner
-                    '''
+
+                    bat 'docker-compose down || echo "No containers to stop"'
+
+                    bat 'docker-compose up --build --abort-on-container-exit --exit-code-from test-runner test-runner'
                 }
             }
         }
@@ -52,29 +36,21 @@ pipeline {
         stage('Collect Reports') {
             steps {
                 script {
-                    // Копируем отчеты из контейнеров если нужно
-                    bat '''
-                        docker cp test-runner:/app/target/ ./target-from-container/ 2>nul || echo "No reports in test-runner"
-                        docker cp test-runner:/app/reports/ ./reports-from-container/ 2>nul || echo "No reports in test-runner"
-
-                        # Проверяем что есть в рабочей директории
-                        dir /s *report* || echo "No report files found"
-                        dir /s target || echo "No target directory"
-                    '''
+                    // Проверка, существуют ли отчеты
+                    bat 'dir /s target || echo "No target directory"'
+                    bat 'dir /s reports || echo "No reports directory"'
+                    bat 'dir /s target\\surefire-reports 2>nul || echo "No surefire-reports directory"'
                 }
             }
             post {
                 always {
-                    // Ищем отчеты в разных возможных местах
+                    // Разные возможные пути к отчетам
                     junit testResults: '**/surefire-reports/*.xml', allowEmptyResults: true
                     junit testResults: '**/test-results/*.xml', allowEmptyResults: true
                     junit testResults: '**/reports/*.xml', allowEmptyResults: true
-                    junit testResults: '**/target/*-reports/*.xml', allowEmptyResults: true
-                    junit testResults: '**/target-from-container/**/*.xml', allowEmptyResults: true
 
                     archiveArtifacts artifacts: '**/target/**/*', allowEmptyArchive: true
                     archiveArtifacts artifacts: '**/reports/**/*', allowEmptyArchive: true
-                    archiveArtifacts artifacts: '**/target-from-container/**/*', allowEmptyArchive: true
 
                     publishHTML([
                         allowMissing: true,
@@ -92,11 +68,7 @@ pipeline {
     post {
         always {
             script {
-                bat '''
-                    docker-compose down --rmi local --remove-orphans || echo "Final cleanup"
-                    docker rm -f selenoid test-runner 2>nul || echo "Containers already removed"
-                '''
-
+                // Собираем информацию о тестах для email
                 def testResult = currentBuild.currentResult
                 def buildUrl = env.BUILD_URL
                 def jobName = env.JOB_NAME
@@ -115,7 +87,7 @@ pipeline {
                                 <p><strong>Статус:</strong> ${testResult}</p>
                                 <p><strong>Проект:</strong> ${jobName}</p>
                                 <p>Подробности сборки: <a href="${buildUrl}">${buildUrl}</a></p>
-                                <p><em>Тестовые отчеты могут быть недоступны из-за конфликта контейнеров</em></p>
+                                <p><em>Примечание: Тестовые отчеты могут быть недоступны</em></p>
                             </body>
                         </html>
                     """,
