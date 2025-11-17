@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-test-runner
+    volumes:
+      - ./target:/usr/src/app/target
+      - maven-cache:/root/.m2
+    environment:
+      - DOCKER_URL=http://host.docker.internal:8000
+    depends_on:
+      selenoid:
+        condition: service_healthy
+    networks:
+      - test-network
+
+  selenoid:
+    image: aerokube/selenoid:latest-release
+    container_name: selenoid
+    ports:
+      - "4444:4444"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./selenoid/browser.json:/etc/selenoid/browser.json:ro
+    environment:
+      - OVERRIDE_VIDEO_OUTPUT_DIR=/tmp/video
+    command: ["-conf", "/etc/selenoid/browser.json", "-video-output-dir", "/tmp/video", "-limit", "10"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4444/status"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - test-network
+
+volumes:
+  maven-cache:
+    driver: local
+
+networks:
+  test-network:
+    driver: bridge

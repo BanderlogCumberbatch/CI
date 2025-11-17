@@ -20,12 +20,12 @@ public final class BaseRequests {
     /**
      * URL WordPress.
      */
-    private static final String API_URL = "http://localhost:8000/";
+    private static final String WP_URL = getUrl();
 
     /**
      * API для взаимодействия с записями.
      */
-    private static final String API_POSTS = "index.php?rest_route=/wp/v2/posts";
+    private static final String WP_POSTS = "index.php?rest_route=/wp/v2/posts";
 
     /**
      * Логин для WordPress.
@@ -40,12 +40,31 @@ public final class BaseRequests {
     /**
      * Переменная окружения из Jenkins для доступа к логину WordPress.
      */
-    private static final String JENKINS_API_USERNAME = "WORDPRESS_USERNAME";
+    private static final String JENKINS_WP_USERNAME = "WORDPRESS_USERNAME";
 
     /**
      * Переменная окружения из Jenkins для доступа к паролю WordPress.
      */
-    private static final String JENKINS_API_PASSWORD = "WORDPRESS_PASSWORD";
+    private static final String JENKINS_WP_PASSWORD = "WORDPRESS_PASSWORD";
+
+    /**
+     * Переменная окружения Docker URL WordPress.
+     */
+    private static final String DOCKER_WP_URL = "DOCKER_URL";
+
+    /**
+     * Метод, возвращающий URL WordPress
+     * @return переменная окружения Docker, если она присутствует
+     * в противном случае <a href="http://localhost:8000/">...</a>
+     */
+    private static String getUrl() {
+
+        String envUrl = System.getenv(DOCKER_WP_URL);
+        if (envUrl != null && !envUrl.trim().isEmpty()) {
+            return envUrl;
+        }
+        return "http://localhost:8000/";
+    }
 
     /**
      * Метод, возвращающий логин WordPress
@@ -54,7 +73,7 @@ public final class BaseRequests {
      */
     private static String getUsername() {
 
-        String envUsername = System.getenv(JENKINS_API_USERNAME);
+        String envUsername = System.getenv(JENKINS_WP_USERNAME);
         if (envUsername != null && !envUsername.trim().isEmpty()) {
             return envUsername;
         }
@@ -68,7 +87,7 @@ public final class BaseRequests {
      */
     private static String getPassword() {
 
-        String envPassword = System.getenv(JENKINS_API_PASSWORD);
+        String envPassword = System.getenv(JENKINS_WP_PASSWORD);
         if (envPassword != null && !envPassword.trim().isEmpty()) {
             return envPassword;
         }
@@ -84,7 +103,7 @@ public final class BaseRequests {
         RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
         requestSpecBuilder
                 .setContentType(ContentType.JSON)
-                .setBaseUri(API_URL)
+                .setBaseUri(WP_URL)
                 .setAccept(ContentType.JSON);
         requestSpecification = requestSpecBuilder.build();
     }
@@ -106,7 +125,7 @@ public final class BaseRequests {
                 .auth().preemptive().basic(USERNAME, PASSWORD)
                 .body(postPojo)
                 .when()
-                    .post(API_POSTS)
+                    .post(WP_POSTS)
                 .then()
                     .statusCode(201)
                     .body("status", equalTo(postPojo.getStatus()))
@@ -135,7 +154,7 @@ public final class BaseRequests {
             .body(postPojo)
             .pathParam("id", postId)
             .when()
-                .put(API_POSTS + "/{id}")
+                .put(WP_POSTS + "/{id}")
             .then()
                 .statusCode(200)
                 .body("status", equalTo(postPojo.getStatus()))
@@ -159,7 +178,7 @@ public final class BaseRequests {
             .body(postPojo)
             .pathParam("id", postId)
             .when()
-                .patch(API_POSTS + "/{id}")
+                .patch(WP_POSTS + "/{id}")
             .then()
                 .statusCode(200)
                 .body("status", equalTo(postPojo.getStatus()))
@@ -178,7 +197,7 @@ public final class BaseRequests {
                 .spec(requestSpecification)
                 .pathParam("id", postId)
                 .when()
-                    .get(API_POSTS + "/{id}")
+                    .get(WP_POSTS + "/{id}")
                 .then()
                     .statusCode(statusCode)
                     .extract().response();
@@ -202,7 +221,7 @@ public final class BaseRequests {
                     .auth().preemptive().basic(USERNAME, PASSWORD)
                     .pathParam("id", postId)
                     .when()
-                        .delete(API_POSTS + "/{id}&force=true")
+                        .delete(WP_POSTS + "/{id}&force=true")
                     .then()
                         .statusCode(200);
         }
