@@ -55,30 +55,49 @@ pipeline {
         }
         success {
             emailext (
-                subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: "<h2>Результаты тестирования</h2>
-                       <p><strong>Проект:</strong> ${PROJECT_NAME}</p>
-                       <p><strong>Сборка:</strong> #${BUILD_NUMBER}</p>
-                       <p><strong>Статус:</strong> ${BUILD_STATUS}</p>
-                       <p>Подробности сборки:</p>
-                       <p>Кол-во тестов: ${TEST_COUNTS,var="TOTAL"}</p>
-                       <p>Кол-во провалившихся тестов: ${TEST_COUNTS,var="FAIL"}</p>
-                       <p>Кол-во пройденных тестов: ${TEST_COUNTS,var="PASS"}</p>",
-                from: "banderlog.cumberbatch@gmail.com"
+                subject: "УСПЕХ: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """
+                    <html>
+                        <head>
+                            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                        </head>
+                        <body>
+                            <h2>Результаты тестирования</h2>
+                            <p><strong>Проект:</strong> ${PROJECT_NAME}</p>
+                            <p><strong>Сборка:</strong> #${env.BUILD_NUMBER}</p>
+                            <p><strong>Статус:</strong> ${currentBuild.currentResult}</p>
+                            <p>Подробности сборки:</p>
+                            <p>Кол-во тестов: ${TEST_COUNTS,var="TOTAL"}</p>
+                            <p>Кол-во провалившихся тестов: ${TEST_COUNTS,var="FAIL"}</p>
+                            <p>Кол-во пройденных тестов: ${TEST_COUNTS,var="PASS"}</p>
+                        </body>
+                    </html>
+                """,
+                mimeType: "text/html",
                 to: "banderlog.cumberbatch@gmail.com"
             )
         }
         failure {
             emailext (
-                subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: "<h2>Результаты тестирования</h2>
-                       <p><strong>Проект:</strong> ${PROJECT_NAME}</p>
-                       <p><strong>Сборка:</strong> #${BUILD_NUMBER}</p>
-                       <p><strong>Статус:</strong> ${BUILD_STATUS}</p>
-                       <p>Подробности сборки:</p>
-                       <p>Кол-во тестов: ${TEST_COUNTS,var="TOTAL"}</p>
-                       <p>Кол-во провалившихся тестов: ${TEST_COUNTS,var="FAIL"}</p>
-                       <p>Кол-во пройденных тестов: ${TEST_COUNTS,var="PASS"}</p>",
+                subject: "ПРОВАЛ: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """
+                    <html>
+                        <head>
+                            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                        </head>
+                        <body>
+                            <h2>Результаты тестирования</h2>
+                            <p><strong>Проект:</strong> ${PROJECT_NAME}</p>
+                            <p><strong>Сборка:</strong> #${env.BUILD_NUMBER}</p>
+                            <p><strong>Статус:</strong> ${currentBuild.currentResult}</p>
+                            <p>Подробности сборки:</p>
+                            <p>Кол-во тестов: ${TEST_COUNTS,var="TOTAL"}</p>
+                            <p>Кол-во провалившихся тестов: ${TEST_COUNTS,var="FAIL"}</p>
+                            <p>Кол-во пройденных тестов: ${TEST_COUNTS,var="PASS"}</p>
+                        </body>
+                    </html>
+                """,
+                mimeType: "text/html",
                 from: "banderlog.cumberbatch@gmail.com"
                 to: "banderlog.cumberbatch@gmail.com"
             )
