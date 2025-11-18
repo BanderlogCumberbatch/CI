@@ -1,1 +1,4 @@
 .idea
+allure-results
+target
+src/test/resources/secret.properties
